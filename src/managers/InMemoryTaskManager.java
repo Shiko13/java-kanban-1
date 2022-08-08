@@ -4,21 +4,15 @@ import tasks.Epic;
 import tasks.Status;
 import tasks.Subtask;
 import tasks.Task;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class InMemoryTaskManager implements TaskManager {
     private int counterId = 0;
-    private HashMap<Integer, Task> tasks = new HashMap<>();
-    private HashMap<Integer, Subtask> subtasks = new HashMap<>();
-    private HashMap<Integer, Epic> epics = new HashMap<>();
-
-    public HistoryManager getHistoryManager() {
-        return historyManager;
-    }
-
-    private HistoryManager historyManager = Managers.getDefaultHistory();
+    private final HashMap<Integer, Task> tasks = new HashMap<>();
+    private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
+    private final HashMap<Integer, Epic> epics = new HashMap<>();
+    private final HistoryManager historyManager = Managers.getDefaultHistory();
 
     @Override
     public void updateTask(Task task) {
@@ -47,17 +41,18 @@ public class InMemoryTaskManager implements TaskManager {
     public Subtask addSubtask(Subtask subtask) {
         subtask.setId(++counterId);
         subtasks.put(subtask.getId(), subtask);
-        getEpicById(subtask.getEpicId()).getSubtasksOfEpic().add(counterId);
+        epics.get(subtask.getEpicId()).getSubtasksOfEpic().add(counterId);
         checkStatusOfEpic(subtask);
         return subtask;
     }
 
-    private void checkStatusOfEpic(Subtask subtask) {
-        if ((subtask.getStatus() == Status.NEW && getEpicById(subtask.getEpicId()).getStatus() == Status.DONE) ||
-                (subtask.getStatus() == Status.IN_PROGRESS && getEpicById(subtask.getEpicId()).getStatus() == Status.NEW) ||
-                (subtask.getStatus() == Status.IN_PROGRESS && getEpicById(subtask.getEpicId()).getStatus() == Status.DONE) ||
-                (subtask.getStatus() == Status.DONE && getEpicById(subtask.getEpicId()).getStatus() == Status.NEW)) {
-            getEpicById(subtask.getEpicId()).setStatus(Status.IN_PROGRESS);
+    @Override
+    public void checkStatusOfEpic(Subtask subtask) {
+        if ((subtask.getStatus() == Status.NEW && epics.get(subtask.getEpicId()).getStatus() == Status.DONE) ||
+                (subtask.getStatus() == Status.IN_PROGRESS && epics.get(subtask.getEpicId()).getStatus() == Status.NEW) ||
+                (subtask.getStatus() == Status.IN_PROGRESS && epics.get(subtask.getEpicId()).getStatus() == Status.DONE) ||
+                (subtask.getStatus() == Status.DONE && epics.get(subtask.getEpicId()).getStatus() == Status.NEW)) {
+            epics.get(subtask.getEpicId()).setStatus(Status.IN_PROGRESS);
         }
     }
 
@@ -70,29 +65,22 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public ArrayList<Task> getTasks() {
-        ArrayList<Task> taskList = new ArrayList<>();
-        for (Task task : tasks.values()) {
-            taskList.add(task);
-        }
-        return taskList;
+       return new ArrayList<>(tasks.values());
     }
 
     @Override
     public ArrayList<Subtask> getSubtasks() {
-        ArrayList<Subtask> subtaskList = new ArrayList<>();
-        for (Subtask subtask : subtasks.values()) {
-            subtaskList.add(subtask);
-        }
-        return subtaskList;
+        return new ArrayList<>(subtasks.values());
     }
 
     @Override
     public ArrayList<Epic> getEpics() {
-        ArrayList<Epic> epicList = new ArrayList<>();
-        for (Epic epic : epics.values()) {
-            epicList.add(epic);
-        }
-        return epicList;
+        return new ArrayList<>(epics.values());
+    }
+
+    @Override
+    public HistoryManager getHistoryManager() {
+        return historyManager;
     }
 
     @Override
@@ -158,8 +146,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public ArrayList<Integer> getIdSubtasksOfEpic(Integer epicId) {
-        ArrayList<Integer> idSubtaskOfEpic = getEpicById(epicId).getSubtasksOfEpic();
-        return idSubtaskOfEpic;
+        return getEpicById(epicId).getSubtasksOfEpic();
     }
 
     @Override

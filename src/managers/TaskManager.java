@@ -45,5 +45,9 @@ public interface TaskManager {
 
     ArrayList<Integer> getIdSubtasksOfEpic(Integer epicId);
 
+    void checkStatusOfEpic(Subtask subtask);
+
+    HistoryManager getHistoryManager();
+
     void checkStatusEpicAfterChangeOrDeleteSubtask(int epicId);
 }
