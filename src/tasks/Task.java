@@ -5,6 +5,7 @@ public class Task {
     private String description;
     private Integer id;
     private Status status;
+    private TypeOfTask typeOfTask;
 
     public Task(String name, String description, Status status) {
         this.name = name;
@@ -17,6 +18,14 @@ public class Task {
         this.description = description;
         this.id = id;
         this.status = status;
+    }
+
+    public Task(String name, String description, Integer id, Status status, TypeOfTask typeOfTask) {
+        this.name = name;
+        this.description = description;
+        this.id = id;
+        this.status = status;
+        this.typeOfTask = typeOfTask;
     }
 
     public Status getStatus() {
