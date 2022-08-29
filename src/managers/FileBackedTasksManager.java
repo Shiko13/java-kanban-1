@@ -13,6 +13,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     private final File file;
 
+    private static List<Integer> history = new ArrayList<>();
+
     public FileBackedTasksManager(File file) {
         this.file = file;
     }
@@ -95,7 +97,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
-    private static FileBackedTasksManager loadFromFile(File file) {
+    public static FileBackedTasksManager loadFromFile(File file) {
         FileBackedTasksManager fileBackedTasksManager = new FileBackedTasksManager(file);
 
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
@@ -125,7 +127,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     private static void historyLoadFromFile(FileBackedTasksManager fileBackedTasksManager, BufferedReader bufferedReader) throws IOException {
         String str;
         if ((str = bufferedReader.readLine()) != null) {
-            List<Integer> history = historyFromString(str);
+            history = historyFromString(str);
             for (Integer id : history) {
                 if (fileBackedTasksManager.tasks.containsKey(id)) {
                     Task task = fileBackedTasksManager.tasks.get(id);
@@ -297,5 +299,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     public void removeEpicById(Integer id) {
         super.removeEpicById(id);
         save();
+    }
+
+    public static List<Integer> getHistory() {
+        return history;
     }
 }

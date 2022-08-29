@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
+
     private final CustomLinkedList<Task> viewHistory = new CustomLinkedList<>();
+
     private final HashMap<Integer, CustomLinkedList.Node<Task>> viewHistoryMap = new HashMap<>();
 
     @Override
@@ -85,5 +87,13 @@ public class InMemoryHistoryManager implements HistoryManager {
             }
             size--;
         }
+    }
+
+    public HashMap<Integer, CustomLinkedList.Node<Task>> getViewHistoryMap() {
+        return viewHistoryMap;
+    }
+
+    public CustomLinkedList<Task> getViewHistory() {
+        return viewHistory;
     }
 }

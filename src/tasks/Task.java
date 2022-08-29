@@ -1,5 +1,6 @@
 package tasks;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
@@ -7,21 +8,12 @@ public class Task {
     private final String description;
     private Integer id;
     private Status status;
+    private int duration;
+    private LocalDateTime startTime;
+    private LocalDateTime getEndTime;
 
     private final TypeOfTask typeOfTask = TypeOfTask.TASK;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Task task = (Task) o;
-        return Objects.equals(name, task.name) && Objects.equals(description, task.description) && Objects.equals(id, task.id) && status == task.status && typeOfTask == task.typeOfTask;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, description, id, status, typeOfTask);
-    }
 
     public Task(String name, String description, Status status) {
         this.name = name;
@@ -34,6 +26,25 @@ public class Task {
         this.description = description;
         this.id = id;
         this.status = status;
+    }
+
+    public Task(String name, String description, Status status, int duration, LocalDateTime startTime) {
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.duration = duration;
+        this.startTime = startTime;
+        this.getEndTime = startTime.plusMinutes(duration);
+    }
+
+    public Task(String name, String description, Integer id, Status status, int duration, LocalDateTime startTime) {
+        this.name = name;
+        this.description = description;
+        this.id = id;
+        this.status = status;
+        this.duration = duration;
+        this.startTime = startTime;
+        this.getEndTime = startTime.plusMinutes(duration);
     }
 
     public Status getStatus() {
@@ -62,6 +73,19 @@ public class Task {
 
     public TypeOfTask getTypeOfTask() {
         return typeOfTask;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return Objects.equals(name, task.name) && Objects.equals(description, task.description) && Objects.equals(id, task.id) && status == task.status && typeOfTask == task.typeOfTask;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, description, id, status, typeOfTask);
     }
 
     @Override
