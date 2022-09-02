@@ -5,7 +5,17 @@ w
 G.idea/sonarlint/issuestore/8/e/8ec9a00bfd09b3190ac6b22251dbb1aa95a0579d,b\4\b4a0b63ce8560bbc5de0f9995c20cc861dc2adb3
 7
 log.csv,3\f\3fb8bfd14be3cca535b8c8b84811e048179d2e52
+W
+'src/exceptions/TestFailedException.java,6\3\63cc65b2debe12578e11ec99227cef1283191fdf
+?
+java-kanban.iml,d\f\df5dcbbd3f931c7c23855ccec11732ab4c8544f2
 E
-src/tasks/Status.java,7\f\7fcf27d81cd8469d653ba45f3ed87052c6ff1fb1
+src/resources/log.csv,0\8\08b6b7fee42c3e4f47d91bfcecbe35eaf9195f7e
+X
+(src/exceptions/ManagerSaveException.java,7\d\7d3210902b716832cae33861d0284eef901a4491
 I
 src/tasks/TypeOfTask.java,5\7\571f20dee116deb1b37fe4c1ab3bacd3fa5cdac8
+E
+src/tasks/Status.java,7\f\7fcf27d81cd8469d653ba45f3ed87052c6ff1fb1
+P
+ src/managers/HistoryManager.java,2\c\2ce8921cf227c6461f7c968aaad5bca2ef2cbc8a

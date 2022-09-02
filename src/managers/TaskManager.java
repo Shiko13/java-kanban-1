@@ -5,6 +5,8 @@ import tasks.Subtask;
 import tasks.Task;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public interface TaskManager {
     void updateTask(Task task);
@@ -50,4 +52,12 @@ public interface TaskManager {
     HistoryManager getHistoryManager();
 
     void checkStatusEpicAfterChangeOrDeleteSubtask(int epicId);
+
+    void calculateTimeOfEpic(Subtask subtask);
+
+    boolean checkForIntersections(Task task);
+
+    List<Task> getPrioritizedTasks();
+
+    Boolean[] createTableWithIntervals();
 }

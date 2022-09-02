@@ -6,6 +6,7 @@ import tasks.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,22 +40,27 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     private static void createTasks(TaskManager withoutFileBackedTasksManager) {
         int idTask1 = withoutFileBackedTasksManager.
-                addTask(new Task("Task1", "Description of Task1", Status.NEW));
+                addTask(new Task("Task1", "Description of Task1", null, Status.NEW,
+                        200, LocalDateTime.of(2023, 1, 4, 18, 29)));
         int idTask2 = withoutFileBackedTasksManager.
-                addTask(new Task("Task2", "Description of Task2", Status.DONE));
+                addTask(new Task("Task2", "Description of Task2", null, Status.DONE,
+                        200, LocalDateTime.of(2023, 2, 4, 18, 29)));
         Epic epic1 = withoutFileBackedTasksManager.
-                addEpic(new Epic("Epic1", "Description of epic1", Status.NEW));
+                addEpic(new Epic("Epic1", "Description of epic1", null, Status.NEW, null, null));
         Subtask subtask1 = withoutFileBackedTasksManager.
                 addSubtask(new Subtask("Subtask1", "Description of subtask1",
-                3, Status.NEW));
+                        3, null, Status.NEW,
+                        200, LocalDateTime.of(2023, 3, 4, 18, 29)));
         Subtask subtask2 = withoutFileBackedTasksManager.
                 addSubtask(new Subtask("Subtask2", "Description of subtask2",
-                3, Status.NEW));
+                        3, null, Status.NEW,
+                        200, LocalDateTime.of(2023, 4, 4, 18, 29)));
         Subtask subtask3 = withoutFileBackedTasksManager.
                 addSubtask(new Subtask("Subtask3", "Description of subtask3",
-                3, Status.NEW));
+                        3, null, Status.NEW,
+                        200, LocalDateTime.of(2023, 5, 4, 18, 29)));
         Epic epic2 = withoutFileBackedTasksManager.
-                addEpic(new Epic("Epic2", "Description of epic2", Status.NEW));
+                addEpic(new Epic("Epic2", "Description of epic2", null, Status.NEW, null, null));
     }
 
     private static void viewHistoryShouldBeEquals(TaskManager taskManagerWithoutFileBacked, TaskManager fileBackedTasksManager) throws TestFailedException {
@@ -77,7 +83,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
-    private static void subtasksShouldBeEquals(TaskManager taskManagerWithoutFileBacked, TaskManager fileBackedTasksManager) throws TestFailedException {
+    private static void subtasksShouldBeEquals(TaskManager taskManagerWithoutFileBacked,
+                                               TaskManager fileBackedTasksManager) throws TestFailedException {
         List<Subtask> subtasksWithoutFileBacked = taskManagerWithoutFileBacked.getSubtasks();
         List<Subtask> subtasksWithFileBacked = fileBackedTasksManager.getSubtasks();
         for (int i = 0; i < subtasksWithoutFileBacked.size(); i++) {
@@ -87,12 +94,13 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
-    private static void tasksShouldBeEquals(TaskManager taskManagerWithoutFileBacked, TaskManager fileBackedTasksManager) throws TestFailedException {
+    private static void tasksShouldBeEquals(TaskManager taskManagerWithoutFileBacked,
+                                            TaskManager fileBackedTasksManager) throws TestFailedException {
         List<Task> tasksWithoutFileBacked = taskManagerWithoutFileBacked.getTasks();
         List<Task> tasksWithFileBacked = fileBackedTasksManager.getTasks();
         for (int i = 0; i < tasksWithoutFileBacked.size(); i++) {
             if (!tasksWithoutFileBacked.get(i).equals(tasksWithFileBacked.get(i))) {
-                throw new TestFailedException("Не сходятся таски");
+                throw new TestFailedException("Не сходятся задачи");
             }
         }
     }
@@ -110,9 +118,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                         case TASK -> fileBackedTasksManager.tasks.put(task.getId(), task);
                         case EPIC -> fileBackedTasksManager.epics.put(task.getId(), (Epic) task);
                         case SUBTASK -> {
-                                fileBackedTasksManager.subtasks.put(task.getId(), (Subtask) task);
-                                fileBackedTasksManager.epics.get(((Subtask) task).getEpicId())
-                                        .getSubtasksOfEpic().add(((Subtask) task).getId());
+                            fileBackedTasksManager.subtasks.put(task.getId(), (Subtask) task);
+                            fileBackedTasksManager.epics.get(((Subtask) task).getEpicId())
+                                    .getSubtasksOfEpic().add(((Subtask) task).getId());
                         }
                     }
                 } else break;
@@ -124,7 +132,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         return fileBackedTasksManager;
     }
 
-    private static void historyLoadFromFile(FileBackedTasksManager fileBackedTasksManager, BufferedReader bufferedReader) throws IOException {
+    private static void historyLoadFromFile(FileBackedTasksManager fileBackedTasksManager,
+                                            BufferedReader bufferedReader) throws IOException {
         String str;
         if ((str = bufferedReader.readLine()) != null) {
             history = historyFromString(str);
@@ -147,7 +156,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     private void save() throws ManagerSaveException {
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8))) {
-            String header = "id,type,name,status,description,epic";
+            String header = "id,type,name,status,description,epic,duration,startTime";
             bufferedWriter.append(header);
             bufferedWriter.newLine();
 
@@ -175,14 +184,27 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         String[] splitTask = value.split(",");
         TypeOfTask typeOfTask = TypeOfTask.valueOf(splitTask[1]);
         if (typeOfTask == TypeOfTask.TASK) {
-            return new Task(splitTask[2], splitTask[3],
-                    Integer.valueOf(splitTask[0]), Status.valueOf(splitTask[4]));
+            return new Task(splitTask[2],
+                    splitTask[3],
+                    splitTask[0].equals("null") ? null : Integer.parseInt(splitTask[0]),
+                    Status.valueOf(splitTask[4]),
+                    splitTask[5].equals("null") ? null : Integer.parseInt(splitTask[5]),
+                    splitTask[6].equals("null") ? null : LocalDateTime.parse(splitTask[6]));
         } else if (typeOfTask == TypeOfTask.EPIC) {
-            return new Epic(splitTask[2], splitTask[3],
-                    Integer.valueOf(splitTask[0]), Status.valueOf(splitTask[4]));
+            return new Epic(splitTask[2],
+                    splitTask[3],
+                    splitTask[0].equals("null") ? null : Integer.parseInt(splitTask[0]),
+                    Status.valueOf(splitTask[4]),
+                    splitTask[5].equals("null") ? null : Integer.parseInt(splitTask[5]),
+                    splitTask[6].equals("null") ? null : LocalDateTime.parse(splitTask[6]));
         } else if (typeOfTask == TypeOfTask.SUBTASK) {
-            return new Subtask(splitTask[2], splitTask[3], Integer.parseInt(splitTask[5]),
-                    Integer.parseInt(splitTask[0]), Status.valueOf(splitTask[4]));
+            return new Subtask(splitTask[2],
+                    splitTask[3],
+                    Integer.parseInt(splitTask[5]),
+                    Integer.parseInt(splitTask[0]),
+                    Status.valueOf(splitTask[4]),
+                    splitTask[6].equals("null") ? null : Integer.parseInt(splitTask[6]),
+                    splitTask[7].equals("null") ? null : LocalDateTime.parse(splitTask[7]));
         }
         throw new ManagerSaveException("Элемент отсутствует");
     }

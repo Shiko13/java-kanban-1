@@ -8,24 +8,8 @@ public class Subtask extends Task {
     private Integer id;
     private final TypeOfTask typeOfTask = TypeOfTask.SUBTASK;
 
-    public Subtask(String name, String description, int epicId, Status status) {
-        super(name, description, status);
-        this.epicId = epicId;
-    }
-
-    public Subtask(String name, String description, int epicId, int id, Status status) {
-        super(name, description, status);
-        this.epicId = epicId;
-        setId(id);
-    }
-
-    public Subtask(String name, String description, int epicId, Status status, int duration, LocalDateTime startTime) {
-        super(name, description, status, duration, startTime);
-        this.epicId = epicId;
-    }
-
-    public Subtask(String name, String description, int epicId, int id, Status status, int duration, LocalDateTime startTime) {
-        super(name, description, status, duration, startTime);
+    public Subtask(String name, String description, Integer epicId, Integer id, Status status, Integer duration, LocalDateTime startTime) {
+        super(name, description, id, status, duration, startTime);
         this.epicId = epicId;
         setId(id);
     }
@@ -55,7 +39,7 @@ public class Subtask extends Task {
 
     @Override
     public String toString() {
-        return String.format("%d,%s,%s,%s,%s,%s", getId(), getTypeOfTask(), getName(),
-                getDescription(), getStatus(), getEpicId());
+        return String.format("%d,%s,%s,%s,%s,%s,%d,%s", getId(), getTypeOfTask(), getName(),
+                getDescription(), getStatus(), getEpicId(), getDuration(), getStartTime());
     }
 }

@@ -1,32 +1,31 @@
 package tests;
 
-import managers.*;
-import tasks.*;
+import managers.TaskManager;
+import org.junit.jupiter.api.Test;
+import tasks.Epic;
+import tasks.Status;
+import tasks.Subtask;
+import tasks.Task;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
 
-class TaskManagerTest<T extends TaskManager> {
-
-    private TaskManager taskManager;
-
-    @BeforeEach
-    public void createTaskManager() {
-        taskManager = Managers.getDefault();
-    }
+public abstract class TaskManagerTest<T extends TaskManager> {
+    T taskManager;
 
     @Test
     public void updateTask() {
         Task task = new Task("Task",
-                "Task for test updateTask", Status.NEW);
+                "Task for test updateTask", null, Status.NEW,
+                200, LocalDateTime.of(2023, 1, 4, 18, 29));
         final int taskId = taskManager.addTask(task);
 
         Task updateTask = new Task("UpdateTask",
-                "UpdateTask", taskId, Status.DONE);
+                "UpdateTask", taskId, Status.DONE,
+                200, LocalDateTime.of(2023, 2, 4, 18, 29));
         taskManager.updateTask(updateTask);
 
         final Task savedTask = taskManager.getTaskById(taskId);
@@ -44,11 +43,11 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void updateEpic() {
         Epic epic = new Epic("Epic",
-                "Epic for test updateEpic", 1, Status.NEW);
+                "Epic for test updateEpic", 1, Status.NEW, null, null);
         taskManager.addEpic(epic);
 
         Epic updateEpic = new Epic("UpdateEpic",
-                "UpdateEpic", 1, Status.DONE);
+                "UpdateEpic", 1, Status.DONE, null, null);
         taskManager.updateEpic(updateEpic);
 
         final Epic savedEpic = taskManager.getEpicById(1);
@@ -66,15 +65,17 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void updateSubtask() {
         Epic epic = new Epic("Epic",
-                "Epic for test updateSubtask", Status.NEW);
+                "Epic for test updateSubtask", null, Status.NEW, null, null);
         taskManager.addEpic(epic);
 
         Subtask subtask = new Subtask("Subtask",
-                "Subtask for test updateSubtask", 1, 2, Status.NEW);
+                "Subtask for test updateSubtask", 1, 2, Status.NEW,
+                200, LocalDateTime.of(2023, 3, 4, 18, 29));
         taskManager.addSubtask(subtask);
 
         Subtask updateSubtask = new Subtask("UpdateSubtask",
-                "UpdateSubtask", 1, 2, Status.DONE);
+                "UpdateSubtask", 1, 2, Status.DONE,
+                200, LocalDateTime.of(2023, 1, 6, 18, 29));
         taskManager.updateSubtask(updateSubtask);
 
         final Subtask savedSubtask = taskManager.getSubtaskById(2);
@@ -92,7 +93,8 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void addTask() {
         Task task = new Task("Task",
-                "Task for test addTask", Status.NEW);
+                "Task for test addTask", null, Status.NEW,
+                200, LocalDateTime.of(2023, 1, 4, 18, 29));
         final int taskId = taskManager.addTask(task);
 
         final Task savedTask = taskManager.getTaskById(taskId);
@@ -110,7 +112,7 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void addEpic() {
         Epic epic = new Epic("Epic",
-                "Epic for test addEpic", Status.NEW);
+                "Epic for test addEpic", null, Status.NEW, null, null);
         taskManager.addEpic(epic);
 
         final Epic savedEpic = taskManager.getEpicById(1);
@@ -128,11 +130,12 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void addSubtask() {
         Epic epic = new Epic("Epic",
-                "Epic for test addSubtask", Status.NEW);
+                "Epic for test addSubtask", null, Status.NEW, null, null);
         taskManager.addEpic(epic);
 
         Subtask subtask = new Subtask("Subtask",
-                "Subtask for test addSubtask", 1, 2, Status.NEW);
+                "Subtask for test addSubtask", 1, 2, Status.NEW,
+                200, LocalDateTime.of(2023, 1, 5, 18, 29));
         taskManager.addSubtask(subtask);
 
         final Subtask savedSubtask = taskManager.getSubtaskById(2);
@@ -150,15 +153,18 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void getTasks() {
         Task task1 = new Task("Task1",
-                "Task1 for test getTasks", Status.NEW);
+                "Task1 for test getTasks", null, Status.NEW,
+                200, LocalDateTime.of(2023, 1, 4, 18, 29));
         taskManager.addTask(task1);
 
         Task task2 = new Task("Task2",
-                "Task2 for test getTasks", Status.DONE);
+                "Task2 for test getTasks", null, Status.DONE,
+                200, LocalDateTime.of(2023, 4, 4, 18, 29));
         taskManager.addTask(task2);
 
         Task task3 = new Task("Task3 for test getTasks",
-                "Task3 for test getTasks", Status.IN_PROGRESS);
+                "Task3 for test getTasks", null, Status.IN_PROGRESS,
+                200, LocalDateTime.of(2023, 1, 7, 18, 29));
         taskManager.addTask(task3);
 
         List<Task> expected = List.of(
@@ -175,15 +181,15 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void getEpics() {
         Epic epic1 = new Epic("Epic1",
-                "Epic1 for test getEpics", Status.NEW);
+                "Epic1 for test getEpics", null, Status.NEW, null, null);
         taskManager.addEpic(epic1);
 
         Epic epic2 = new Epic("Epic2",
-                "Epic2 for test getEpics", Status.DONE);
+                "Epic2 for test getEpics", null, Status.DONE, null, null);
         taskManager.addEpic(epic2);
 
         Epic epic3 = new Epic("Epic3",
-                "Epic3 for test getEpics", Status.IN_PROGRESS);
+                "Epic3 for test getEpics", null, Status.IN_PROGRESS, null, null);
         taskManager.addEpic(epic3);
 
         List<Epic> expected = List.of(
@@ -200,23 +206,26 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void getSubtasks() {
         Epic epic1 = new Epic("Epic1",
-                "Epic1 for test getSubtasks", Status.NEW);
+                "Epic1 for test getSubtasks", null, Status.NEW, null, null);
         taskManager.addEpic(epic1);
 
         Epic epic2 = new Epic("Epic2",
-                "Epic2 for test getSubtasks", Status.DONE);
+                "Epic2 for test getSubtasks", null, Status.DONE, null, null);
         taskManager.addEpic(epic2);
 
         Subtask subtask1 = new Subtask("Subtask1",
-                "Subtask1 for test getSubtasks", 1, 3, Status.NEW);
+                "Subtask1 for test getSubtasks", 1, 3, Status.NEW,
+                200, LocalDateTime.of(2023, 1, 4, 18, 29));
         taskManager.addSubtask(subtask1);
 
         Subtask subtask2 = new Subtask("Subtask2",
-                "Subtask2 for test getSubtasks", 2, 4, Status.DONE);
+                "Subtask2 for test getSubtasks", 2, 4, Status.DONE,
+                200, LocalDateTime.of(2023, 1, 3, 18, 29));
         taskManager.addSubtask(subtask2);
 
         Subtask subtask3 = new Subtask("Subtask3",
-                "Subtask3 for test getSubtasks", 2, 5, Status.IN_PROGRESS);
+                "Subtask3 for test getSubtasks", 2, 5, Status.IN_PROGRESS,
+                200, LocalDateTime.of(2023, 2, 4, 18, 29));
         taskManager.addSubtask(subtask3);
 
         List<Subtask> expected = List.of(
@@ -231,17 +240,45 @@ class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
+    public void getPrioritizedTasks() {
+        Task task1 = new Task("Task1",
+                "Task1 for test checkForIntersections", null, Status.NEW,
+                20, LocalDateTime.of(2023, 2, 26, 10, 0));
+        taskManager.addTask(task1);
+
+        Task task2 = new Task("Task2",
+                "Task2 for test checkForIntersections", null, Status.NEW,
+                20, LocalDateTime.of(2023, 4, 30, 10, 25));
+        taskManager.addTask(task2);
+
+        Task task3 = new Task("Task3",
+                "Task3 for test checkForIntersections", null, Status.NEW,
+                20, LocalDateTime.of(2023, 1, 31, 11, 0));
+        taskManager.addTask(task3);
+
+        final List<Task> expected = List.of(
+                task3,
+                task1,
+                task2
+        );
+        final List<Task> actual = taskManager.getPrioritizedTasks();
+        assertEquals(expected, actual, "Неверно расставлены приоритеты");
+    }
+
+    @Test
     public void getHistoryManager() {
         Task task = new Task("Task",
-                "Task for test getHistoryManager", Status.NEW);
+                "Task for test getHistoryManager", null, Status.NEW,
+                200, LocalDateTime.of(2023, 1, 4, 18, 29));
         taskManager.addTask(task);
 
         Epic epic = new Epic("Epic",
-                "Epic for test getHistoryManager", Status.NEW);
+                "Epic for test getHistoryManager", null, Status.NEW, null, null);
         taskManager.addEpic(epic);
 
         Subtask subtask = new Subtask("Subtask",
-                "Subtask for test getHistoryManager", 2, 3, Status.NEW);
+                "Subtask for test getHistoryManager", 2, 3, Status.NEW,
+                200, LocalDateTime.of(2023, 1, 5, 18, 29));
         taskManager.addSubtask(subtask);
 
         taskManager.getTaskById(1);
@@ -262,11 +299,13 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void removeAllTasks() {
         Task task1 = new Task("Task1",
-                "Task1 for test removeAllTasks", Status.NEW);
+                "Task1 for test removeAllTasks", null, Status.NEW,
+                200, LocalDateTime.of(2023, 1, 4, 18, 29));
         taskManager.addTask(task1);
 
         Task task2 = new Task("Task2",
-                "Task2 for test removeAllTasks", Status.DONE);
+                "Task2 for test removeAllTasks", null, Status.DONE,
+                200, LocalDateTime.of(2023, 3, 4, 18, 29));
         taskManager.addTask(task2);
 
         taskManager.removeAllTasks();
@@ -279,11 +318,11 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void removeAllEpics() {
         Epic epic1 = new Epic("Epic1",
-                "Epic1 for test removeAllEpics", Status.NEW);
+                "Epic1 for test removeAllEpics", null, Status.NEW, null, null);
         taskManager.addEpic(epic1);
 
         Epic epic2 = new Epic("Epic2",
-                "Epic2 for test removeAllEpics", Status.DONE);
+                "Epic2 for test removeAllEpics", null, Status.DONE, null, null);
         taskManager.addEpic(epic2);
 
         taskManager.removeAllEpics();
@@ -297,23 +336,26 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void removeAllSubtasks() {
         Epic epic1 = new Epic("Epic1",
-                "Epic1 for test removeAllSubtasks", Status.NEW);
+                "Epic1 for test removeAllSubtasks", null, Status.NEW, null, null);
         taskManager.addEpic(epic1);
 
         Epic epic2 = new Epic("Epic2",
-                "Epic2 for test removeAllSubtasks", Status.DONE);
+                "Epic2 for test removeAllSubtasks", null, Status.DONE, null, null);
         taskManager.addEpic(epic2);
 
         Subtask subtask1 = new Subtask("Subtask1",
-                "Subtask1 for test removeAllSubtasks description", 1, 3, Status.NEW);
+                "Subtask1 for test removeAllSubtasks description", 1, 3, Status.NEW,
+                200, LocalDateTime.of(2023, 1, 4, 18, 29));
         taskManager.addSubtask(subtask1);
 
         Subtask subtask2 = new Subtask("Subtask2",
-                "Subtask2 for test removeAllSubtasks", 2, 4, Status.DONE);
+                "Subtask2 for test removeAllSubtasks", 2, 4, Status.DONE,
+                200, LocalDateTime.of(2023, 2, 4, 18, 29));
         taskManager.addSubtask(subtask2);
 
         Subtask subtask3 = new Subtask("Subtask3",
-                "Subtask3 for test removeAllSubtasks", 2, 5, Status.IN_PROGRESS);
+                "Subtask3 for test removeAllSubtasks", 2, 5, Status.IN_PROGRESS,
+                200, LocalDateTime.of(2023, 3, 4, 18, 29));
         taskManager.addSubtask(subtask3);
 
         taskManager.removeAllSubtasks();
@@ -327,7 +369,8 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void getTaskById() {
         Task task = new Task("Task",
-                "Task for test getTaskById", Status.NEW);
+                "Task for test getTaskById", null, Status.NEW,
+                200, LocalDateTime.of(2023, 1, 4, 18, 29));
         taskManager.addTask(task);
 
         assertEquals(task, taskManager.getTaskById(1), "Возвращается неверная задача");
@@ -336,7 +379,7 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void getEpicById() {
         Epic epic = new Epic("Epic",
-                "Epic for test getEpicById", Status.NEW);
+                "Epic for test getEpicById", null, Status.NEW, null, null);
         taskManager.addEpic(epic);
 
         assertEquals(epic, taskManager.getEpicById(1), "Возвращается неверный эпик");
@@ -345,11 +388,12 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void getSubtaskById() {
         Epic epic = new Epic("Epic",
-                "Epic for test getSubtaskById", Status.NEW);
+                "Epic for test getSubtaskById", null, Status.NEW, null, null);
         taskManager.addEpic(epic);
 
         Subtask subtask = new Subtask("Subtask",
-                "Subtask for test getSubtaskById", 1, 2, Status.NEW);
+                "Subtask for test getSubtaskById", 1, 2, Status.NEW,
+                200, LocalDateTime.of(2023, 1, 4, 18, 29));
         taskManager.addSubtask(subtask);
 
         assertEquals(subtask, taskManager.getSubtaskById(2), "Возвращается неверная подзадача");
@@ -358,15 +402,18 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void removeTaskById() {
         Task task1 = new Task("Task1",
-                "Task1 for test removeTaskById", Status.NEW);
+                "Task1 for test removeTaskById", null, Status.NEW,
+                200, LocalDateTime.of(2023, 1, 4, 18, 29));
         taskManager.addTask(task1);
 
         Task task2 = new Task("Task2",
-                "Task2 for test removeTaskById", Status.DONE);
+                "Task2 for test removeTaskById", null, Status.DONE,
+                200, LocalDateTime.of(2023, 2, 4, 18, 29));
         taskManager.addTask(task2);
 
         Task task3 = new Task("Task3",
-                "Task3 for test removeTaskById", Status.IN_PROGRESS);
+                "Task3 for test removeTaskById", null, Status.IN_PROGRESS,
+                200, LocalDateTime.of(2023, 3, 4, 18, 29));
         taskManager.addTask(task3);
 
         taskManager.removeTaskById(2);
@@ -383,14 +430,14 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void removeEpicById() {
         Epic epic1 = new Epic("Epic1",
-                "Epic1 for test removeEpicById", Status.NEW);
+                "Epic1 for test removeEpicById", null, Status.NEW, null, null);
         taskManager.addEpic(epic1);
         Epic epic2 = new Epic("Epic2",
-                "Epic2 for test removeEpicById", Status.DONE);
+                "Epic2 for test removeEpicById", null, Status.DONE, null, null);
         taskManager.addEpic(epic2);
 
         Epic epic3 = new Epic("Epic3",
-                "Epic3 for test removeEpicById", Status.IN_PROGRESS);
+                "Epic3 for test removeEpicById", null, Status.IN_PROGRESS, null, null);
         taskManager.addEpic(epic3);
 
         taskManager.removeEpicById(2);
@@ -407,23 +454,26 @@ class TaskManagerTest<T extends TaskManager> {
     @Test
     public void removeSubtaskById() {
         Epic epic1 = new Epic("Epic1",
-                "Epic1 for test removeSubtaskById", Status.NEW);
+                "Epic1 for test removeSubtaskById", null, Status.NEW, null, null);
         taskManager.addEpic(epic1);
 
         Epic epic2 = new Epic("Epic2",
-                "Epic2 for test removeSubtaskById", Status.DONE);
+                "Epic2 for test removeSubtaskById", null, Status.DONE, null, null);
         taskManager.addEpic(epic2);
 
         Subtask subtask1 = new Subtask("Subtask1",
-                "Subtask1 for test removeSubtaskById", 1, 3, Status.NEW);
+                "Subtask1 for test removeSubtaskById", 1, 3, Status.NEW,
+                200, LocalDateTime.of(2023, 1, 4, 18, 29));
         taskManager.addSubtask(subtask1);
 
         Subtask subtask2 = new Subtask("Subtask2",
-                "Subtask2 for test removeSubtaskById", 2, 4, Status.DONE);
+                "Subtask2 for test removeSubtaskById", 2, 4, Status.DONE,
+                200, LocalDateTime.of(2023, 2, 4, 18, 29));
         taskManager.addSubtask(subtask2);
 
         Subtask subtask3 = new Subtask("Subtask3",
-                "Subtask3 for test removeSubtaskById", 2, 5, Status.IN_PROGRESS);
+                "Subtask3 for test removeSubtaskById", 2, 5, Status.IN_PROGRESS,
+                200, LocalDateTime.of(2023, 3, 4, 18, 29));
         taskManager.addSubtask(subtask3);
 
         taskManager.removeSubtaskById(4);
@@ -438,21 +488,44 @@ class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
+    public void checkForIntersections() {
+        Task task1 = new Task("Task1",
+                "Task1 for test checkForIntersections", null, Status.NEW,
+                90, LocalDateTime.of(2022, 10, 2, 12, 30));
+        taskManager.addTask(task1);
+
+        Task task2 = new Task("Task2",
+                "Task2 for test checkForIntersections", null, Status.NEW,
+                20, LocalDateTime.of(2022, 10, 2, 13, 50));
+
+        Task task3 = new Task("Task3",
+                "Task3 for test checkForIntersections", null, Status.NEW,
+                20, LocalDateTime.of(2022, 10, 2, 14, 10));
+
+        assertFalse(taskManager.checkForIntersections(task2));
+        assertTrue(taskManager.checkForIntersections(task3));
+    }
+
+
+    @Test
     public void getIdSubtasksOfEpic() {
         Epic epic = new Epic("Epic",
-                "Epic for test getIdSubtasksOfEpic", Status.NEW);
+                "Epic for test getIdSubtasksOfEpic", null, Status.NEW, null, null);
         taskManager.addEpic(epic);
 
         Subtask subtask1 = new Subtask("Subtask1",
-                "Subtask1 for test getIdSubtasksOfEpic", 1, 2, Status.NEW);
+                "Subtask1 for test getIdSubtasksOfEpic", 1, 2, Status.NEW,
+                200, LocalDateTime.of(2023, 1, 4, 18, 29));
         taskManager.addSubtask(subtask1);
 
         Subtask subtask2 = new Subtask("Subtask2",
-                "Subtask2 for test getIdSubtasksOfEpic", 1, 3, Status.DONE);
+                "Subtask2 for test getIdSubtasksOfEpic", 1, 3, Status.DONE,
+                200, LocalDateTime.of(2023, 1, 2, 18, 29));
         taskManager.addSubtask(subtask2);
 
         Subtask subtask3 = new Subtask("Subtask3",
-                "Subtask3 for test getIdSubtasksOfEpic", 1, 4, Status.IN_PROGRESS);
+                "Subtask3 for test getIdSubtasksOfEpic", 1, 4, Status.IN_PROGRESS,
+                200, LocalDateTime.of(2023, 1, 3, 18, 29));
         taskManager.addSubtask(subtask3);
 
         List<Integer> actual = taskManager.getIdSubtasksOfEpic(1);
@@ -465,3 +538,4 @@ class TaskManagerTest<T extends TaskManager> {
         assertEquals(expected, actual, "Неверный список id подзадач эпика");
     }
 }
+

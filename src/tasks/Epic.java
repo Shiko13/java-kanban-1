@@ -1,33 +1,20 @@
 package tasks;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class Epic extends Task {
 
     private final ArrayList<Integer> subtasksOfEpic;
     private final TypeOfTask typeOfTask = TypeOfTask.EPIC;
+    private TreeSet<Subtask> sortedByStartTimeSubtasks;
+    private TreeSet<Subtask> sortedByEndTimeSubtasks;
 
-    public Epic(String name, String description, Status status) {
-        super(name, description, status);
-        subtasksOfEpic = new ArrayList<>();
-    }
-
-    public Epic(String name, String description, Integer id, Status status) {
-        super(name, description, id, status);
-        subtasksOfEpic = new ArrayList<>();
-    }
-
-    public Epic(String name, String description, Status status, int duration, LocalDateTime startTime) {
-        super(name, description, status, duration, startTime);
-        subtasksOfEpic = new ArrayList<>();
-    }
-
-    public Epic(String name, String description, Integer id, Status status, int duration, LocalDateTime startTime) {
+    public Epic(String name, String description, Integer id, Status status, Integer duration, LocalDateTime startTime) {
         super(name, description, id, status, duration, startTime);
         subtasksOfEpic = new ArrayList<>();
+        this.sortedByStartTimeSubtasks = new TreeSet<>(Comparator.comparing(Task::getStartTime));
+        this.sortedByEndTimeSubtasks = new TreeSet<>(Comparator.comparing(Task::getEndTime).reversed());
     }
 
     public ArrayList<Integer> getSubtasksOfEpic() {
@@ -38,9 +25,19 @@ public class Epic extends Task {
     public TypeOfTask getTypeOfTask() {
         return typeOfTask;
     }
+
+    public TreeSet<Subtask> getSortedByStartTimeSubtasks() {
+        return sortedByStartTimeSubtasks;
+    }
+
+    public TreeSet<Subtask> getSortedByEndTimeSubtasks() {
+        return sortedByEndTimeSubtasks;
+    }
+
     @Override
     public String toString() {
-        return String.format("%d,%s,%s,%s,%s", getId(), typeOfTask, getName(), getDescription(), getStatus());
+        return String.format("%d,%s,%s,%s,%s,%d,%s", getId(), getTypeOfTask(), getName(),
+                getDescription(), getStatus(), getDuration(), getStartTime());
     }
 
     @Override

@@ -2,49 +2,30 @@ package tasks;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 
 public class Task {
     private final String name;
     private final String description;
     private Integer id;
     private Status status;
-    private int duration;
+    private Integer duration;
     private LocalDateTime startTime;
-    private LocalDateTime getEndTime;
-
+    private final LocalDateTime endTime;
     private final TypeOfTask typeOfTask = TypeOfTask.TASK;
 
-
-    public Task(String name, String description, Status status) {
-        this.name = name;
-        this.description = description;
-        this.status = status;
-    }
-
-    public Task(String name, String description, Integer id, Status status) {
-        this.name = name;
-        this.description = description;
-        this.id = id;
-        this.status = status;
-    }
-
-    public Task(String name, String description, Status status, int duration, LocalDateTime startTime) {
-        this.name = name;
-        this.description = description;
-        this.status = status;
-        this.duration = duration;
-        this.startTime = startTime;
-        this.getEndTime = startTime.plusMinutes(duration);
-    }
-
-    public Task(String name, String description, Integer id, Status status, int duration, LocalDateTime startTime) {
+    public Task(String name, String description, Integer id, Status status, Integer duration, LocalDateTime startTime) {
         this.name = name;
         this.description = description;
         this.id = id;
         this.status = status;
         this.duration = duration;
-        this.startTime = startTime;
-        this.getEndTime = startTime.plusMinutes(duration);
+        this.startTime = Optional.ofNullable(startTime).orElse(startTime);
+        this.endTime = Optional.ofNullable(startTime).isPresent() ? startTime.plusMinutes(duration) : null;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
     }
 
     public Status getStatus() {
@@ -75,6 +56,22 @@ public class Task {
         return typeOfTask;
     }
 
+    public Integer getDuration() {
+        return duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -90,6 +87,7 @@ public class Task {
 
     @Override
     public String toString() {
-        return String.format("%d,%s,%s,%s,%s", getId(), getTypeOfTask(), getName(), getDescription(), getStatus());
+        return String.format("%d,%s,%s,%s,%s,%d,%s", getId(), getTypeOfTask(), getName(),
+                getDescription(), getStatus(), getDuration(), getStartTime());
     }
 }
