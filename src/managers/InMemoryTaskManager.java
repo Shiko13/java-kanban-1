@@ -123,6 +123,10 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
+    public Boolean[] getTable() {
+        return table;
+    }
+
     public boolean checkForIntersections(Task task) {
         int[] bounds = calculateBounds(task);
 

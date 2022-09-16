@@ -5,14 +5,22 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class Task {
-    private final String name;
-    private final String description;
-    private Integer id;
-    private Status status;
-    private Integer duration;
-    private LocalDateTime startTime;
-    private final LocalDateTime endTime;
-    private final TypeOfTask typeOfTask = TypeOfTask.TASK;
+    protected final String name;
+    protected String description;
+    protected Integer id;
+    protected Status status;
+    protected Integer duration;
+    protected LocalDateTime startTime;
+    protected LocalDateTime endTime;
+    protected TypeOfTask typeOfTask;
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public void setTypeOfTask(TypeOfTask typeOfTask) {
+        this.typeOfTask = typeOfTask;
+    }
 
     public Task(String name, String description, Integer id, Status status, Integer duration, LocalDateTime startTime) {
         this.name = name;
@@ -20,12 +28,20 @@ public class Task {
         this.id = id;
         this.status = status;
         this.duration = duration;
-        this.startTime = Optional.ofNullable(startTime).orElse(startTime);
-        this.endTime = Optional.ofNullable(startTime).isPresent() ? startTime.plusMinutes(duration) : null;
+        this.startTime = startTime;
+        this.typeOfTask = TypeOfTask.TASK;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
     }
 
     public LocalDateTime getEndTime() {
-        return endTime;
+        return Optional.ofNullable(startTime).isPresent() ? startTime.plusMinutes(duration) : null;
     }
 
     public Status getStatus() {

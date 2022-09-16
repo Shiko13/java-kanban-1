@@ -4,26 +4,33 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 public class Epic extends Task {
-
-    private final ArrayList<Integer> subtasksOfEpic;
-    private final TypeOfTask typeOfTask = TypeOfTask.EPIC;
-    private TreeSet<Subtask> sortedByStartTimeSubtasks;
-    private TreeSet<Subtask> sortedByEndTimeSubtasks;
+    protected ArrayList<Integer> subtasksOfEpic;
+    protected TreeSet<Subtask> sortedByStartTimeSubtasks;
+    protected TreeSet<Subtask> sortedByEndTimeSubtasks;
 
     public Epic(String name, String description, Integer id, Status status, Integer duration, LocalDateTime startTime) {
         super(name, description, id, status, duration, startTime);
-        subtasksOfEpic = new ArrayList<>();
+        this.typeOfTask = TypeOfTask.EPIC;
+        this.subtasksOfEpic = new ArrayList<>();
+//        this.subtasksOfEpic = new ArrayList<>();
         this.sortedByStartTimeSubtasks = new TreeSet<>(Comparator.comparing(Task::getStartTime));
         this.sortedByEndTimeSubtasks = new TreeSet<>(Comparator.comparing(Task::getEndTime).reversed());
     }
 
-    public ArrayList<Integer> getSubtasksOfEpic() {
-        return subtasksOfEpic;
+    public void setSortedByStartTimeSubtasks(TreeSet<Subtask> sortedByStartTimeSubtasks) {
+        this.sortedByStartTimeSubtasks = sortedByStartTimeSubtasks;
     }
 
-    @Override
-    public TypeOfTask getTypeOfTask() {
-        return typeOfTask;
+    public void setSortedByEndTimeSubtasks(TreeSet<Subtask> sortedByEndTimeSubtasks) {
+        this.sortedByEndTimeSubtasks = sortedByEndTimeSubtasks;
+    }
+
+    public void setSubtasksOfEpic(ArrayList<Integer> subtasksOfEpic) {
+        this.subtasksOfEpic = subtasksOfEpic;
+    }
+
+    public ArrayList<Integer> getSubtasksOfEpic() {
+        return subtasksOfEpic;
     }
 
     public TreeSet<Subtask> getSortedByStartTimeSubtasks() {

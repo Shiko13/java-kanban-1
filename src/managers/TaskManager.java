@@ -4,9 +4,9 @@ import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public interface TaskManager {
     void updateTask(Task task);
@@ -60,4 +60,9 @@ public interface TaskManager {
     List<Task> getPrioritizedTasks();
 
     Boolean[] createTableWithIntervals();
+
+    int[] calculateBounds(Task task);
+
+    Boolean[] getTable();
+
 }

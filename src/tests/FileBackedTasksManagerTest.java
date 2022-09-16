@@ -17,11 +17,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksManager> {
 
-    private final File file = new File("src/resources/log.csv");
+    String path = "src/resources/log.csv";
 
     @BeforeEach
     public void createManager() {
-        taskManager = (FileBackedTasksManager) Managers.getFileBackedTasksManager(file);
+        taskManager = (FileBackedTasksManager) Managers.getFileBackedTasksManager("src/resources/log.csv");
     }
 
     @Test
@@ -34,7 +34,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksM
         taskManager.getTaskById(1);
         taskManager.removeAllTasks();
 
-        FileBackedTasksManager fileBackedTasksManager = loadFromFile(file);
+        FileBackedTasksManager fileBackedTasksManager = loadFromFile(path);
 
         List<Task> savedTasks = fileBackedTasksManager.getHistoryManager().getHistory();
         List<Task> empty = new ArrayList<>();
@@ -52,7 +52,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksM
                 "Epic for test ifEpicHaveNotSubtasks", null, Status.NEW, null, null);
         taskManager.addEpic(epic);
 
-        FileBackedTasksManager fileBackedTasksManager = loadFromFile(file);
+        FileBackedTasksManager fileBackedTasksManager = loadFromFile(path);
 
         List<Epic> actual = fileBackedTasksManager.getEpics();
         List<Epic> expected = List.of(epic);

@@ -1,6 +1,7 @@
 package managers;
 
-import java.io.File;
+import http.KVServer;
+import http.KVTaskClient;
 
 public final class Managers {
 
@@ -8,11 +9,15 @@ public final class Managers {
     }
 
     public static TaskManager getDefault() {
+        return new HTTPTaskManager("8078");
+    }
+
+    public static TaskManager getInMemoryTaskManager() {
         return new InMemoryTaskManager();
     }
 
-    public static TaskManager getFileBackedTasksManager(File file) {
-        return new FileBackedTasksManager(file);
+    public static TaskManager getFileBackedTasksManager(String path) {
+        return new FileBackedTasksManager(path);
     }
 
     public static HistoryManager getDefaultHistory() {

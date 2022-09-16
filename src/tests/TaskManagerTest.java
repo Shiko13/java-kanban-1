@@ -496,11 +496,11 @@ public abstract class TaskManagerTest<T extends TaskManager> {
 
         Task task2 = new Task("Task2",
                 "Task2 for test checkForIntersections", null, Status.NEW,
-                20, LocalDateTime.of(2022, 10, 2, 13, 50));
+                20, LocalDateTime.of(2022, 10, 2, 13, 30));
 
         Task task3 = new Task("Task3",
                 "Task3 for test checkForIntersections", null, Status.NEW,
-                20, LocalDateTime.of(2022, 10, 2, 14, 10));
+                20, LocalDateTime.of(2022, 10, 2, 14, 20));
 
         assertFalse(taskManager.checkForIntersections(task2));
         assertTrue(taskManager.checkForIntersections(task3));

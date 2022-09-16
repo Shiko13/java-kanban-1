@@ -15,7 +15,7 @@ class EpicTest {
 
     @BeforeEach
     public void createTaskManager() {
-        taskManager = Managers.getDefault();
+        taskManager = Managers.getFileBackedTasksManager("src/resources/log.csv");
     }
 
     @Test
@@ -28,7 +28,7 @@ class EpicTest {
         Subtask subtask = new Subtask("Subtask",
                 "Subtask for test calculateEpicStatusIfSubtasksOfEpicIsEmptyAfterRemoveSubtask",
                 1, 2, Status.IN_PROGRESS,
-                200, LocalDateTime.of(2023, 01, 04, 18, 29));
+                200, LocalDateTime.of(2023, 1, 4, 18, 29));
         taskManager.addSubtask(subtask);
 
         assertEquals(epic.getStatus(), Status.IN_PROGRESS);
@@ -76,13 +76,13 @@ class EpicTest {
         Subtask subtask1 = new Subtask("Subtask1",
                 "Subtask1 for test calculateEpicStatusIfAllSubtasksHaveStatusDone",
                 1, 2, Status.DONE,
-                200, LocalDateTime.of(2023, 01, 04, 18, 29));
+                200, LocalDateTime.of(2023, 1, 4, 18, 29));
         taskManager.addSubtask(subtask1);
 
         Subtask subtask2 = new Subtask("Subtask2",
                 "Subtask2 for test calculateEpicStatusIfAllSubtasksHaveStatusDone",
                 1, 3, Status.DONE,
-                200, LocalDateTime.of(2023, 02, 04, 18, 29));
+                200, LocalDateTime.of(2023, 2, 4, 18, 29));
         taskManager.addSubtask(subtask2);
 
         assertEquals(Status.DONE, epic.getStatus());

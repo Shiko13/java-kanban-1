@@ -5,11 +5,10 @@ import java.util.Objects;
 
 public class Subtask extends Task {
     private final Integer epicId;
-    private Integer id;
-    private final TypeOfTask typeOfTask = TypeOfTask.SUBTASK;
 
     public Subtask(String name, String description, Integer epicId, Integer id, Status status, Integer duration, LocalDateTime startTime) {
         super(name, description, id, status, duration, startTime);
+        this.typeOfTask = TypeOfTask.SUBTASK;
         this.epicId = epicId;
         setId(id);
     }
@@ -18,10 +17,6 @@ public class Subtask extends Task {
         return epicId;
     }
 
-    @Override
-    public TypeOfTask getTypeOfTask() {
-        return typeOfTask;
-    }
 
     @Override
     public boolean equals(Object o) {

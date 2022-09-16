@@ -13,54 +13,10 @@ import java.util.List;
 public class FileBackedTasksManager extends InMemoryTaskManager {
 
     private final File file;
-
     private static List<Integer> history = new ArrayList<>();
 
-    public FileBackedTasksManager(File file) {
-        this.file = file;
-    }
-
-    public static void main(String[] args) throws TestFailedException {
-        File file = new File("src/resources/log.csv");
-        TaskManager withoutFileBackedTasksManager = new FileBackedTasksManager(file);
-
-        createTasks(withoutFileBackedTasksManager);
-        withoutFileBackedTasksManager.getTaskById(2);
-        withoutFileBackedTasksManager.getTaskById(1);
-        withoutFileBackedTasksManager.getEpicById(7);
-        withoutFileBackedTasksManager.getSubtaskById(5);
-
-        TaskManager fileBackedTasksManager = loadFromFile(file);
-
-        tasksShouldBeEquals(withoutFileBackedTasksManager, fileBackedTasksManager);
-        subtasksShouldBeEquals(withoutFileBackedTasksManager, fileBackedTasksManager);
-        epicsShouldBeEquals(withoutFileBackedTasksManager, fileBackedTasksManager);
-        viewHistoryShouldBeEquals(withoutFileBackedTasksManager, fileBackedTasksManager);
-    }
-
-    private static void createTasks(TaskManager withoutFileBackedTasksManager) {
-        int idTask1 = withoutFileBackedTasksManager.
-                addTask(new Task("Task1", "Description of Task1", null, Status.NEW,
-                        200, LocalDateTime.of(2023, 1, 4, 18, 29)));
-        int idTask2 = withoutFileBackedTasksManager.
-                addTask(new Task("Task2", "Description of Task2", null, Status.DONE,
-                        200, LocalDateTime.of(2023, 2, 4, 18, 29)));
-        Epic epic1 = withoutFileBackedTasksManager.
-                addEpic(new Epic("Epic1", "Description of epic1", null, Status.NEW, null, null));
-        Subtask subtask1 = withoutFileBackedTasksManager.
-                addSubtask(new Subtask("Subtask1", "Description of subtask1",
-                        3, null, Status.NEW,
-                        200, LocalDateTime.of(2023, 3, 4, 18, 29)));
-        Subtask subtask2 = withoutFileBackedTasksManager.
-                addSubtask(new Subtask("Subtask2", "Description of subtask2",
-                        3, null, Status.NEW,
-                        200, LocalDateTime.of(2023, 4, 4, 18, 29)));
-        Subtask subtask3 = withoutFileBackedTasksManager.
-                addSubtask(new Subtask("Subtask3", "Description of subtask3",
-                        3, null, Status.NEW,
-                        200, LocalDateTime.of(2023, 5, 4, 18, 29)));
-        Epic epic2 = withoutFileBackedTasksManager.
-                addEpic(new Epic("Epic2", "Description of epic2", null, Status.NEW, null, null));
+    public FileBackedTasksManager(String path) {
+        file = new File(path);
     }
 
     private static void viewHistoryShouldBeEquals(TaskManager taskManagerWithoutFileBacked, TaskManager fileBackedTasksManager) throws TestFailedException {
@@ -105,10 +61,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
-    public static FileBackedTasksManager loadFromFile(File file) {
-        FileBackedTasksManager fileBackedTasksManager = new FileBackedTasksManager(file);
+    public static FileBackedTasksManager loadFromFile(String path) {
+        FileBackedTasksManager fileBackedTasksManager = new FileBackedTasksManager(path);
 
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileBackedTasksManager.file, StandardCharsets.UTF_8))) {
             bufferedReader.readLine();
             String str;
             while ((str = bufferedReader.readLine()) != null) {
@@ -154,9 +110,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
-    private void save() throws ManagerSaveException {
+    void save() throws ManagerSaveException {
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8))) {
-            String header = "id,type,name,status,description,epic,duration,startTime";
+            String header = "id,type,name,description,status,epic,duration,startTime";
             bufferedWriter.append(header);
             bufferedWriter.newLine();
 

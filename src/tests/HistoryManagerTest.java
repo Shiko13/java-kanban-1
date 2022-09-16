@@ -20,7 +20,7 @@ class HistoryManagerTest {
     @BeforeEach
     public void createManagers() {
         historyManager = Managers.getDefaultHistory();
-        taskManager = Managers.getDefault();
+        taskManager = Managers.getFileBackedTasksManager("src/resources/log.csv");
     }
 
     @Test
