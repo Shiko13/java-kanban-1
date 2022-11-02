@@ -4,7 +4,10 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Subtask extends Task {
-    private final Integer epicId;
+    private Integer epicId;
+
+    public Subtask() {
+    }
 
     public Subtask(String name, String description, Integer epicId, Integer id, Status status, Integer duration, LocalDateTime startTime) {
         super(name, description, id, status, duration, startTime);
@@ -16,7 +19,6 @@ public class Subtask extends Task {
     public int getEpicId() {
         return epicId;
     }
-
 
     @Override
     public boolean equals(Object o) {

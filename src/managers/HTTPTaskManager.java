@@ -2,23 +2,18 @@ package managers;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-import com.google.gson.stream.JsonWriter;
 import http.KVTaskClient;
+import http.LocalDateTimeAdapter;
 import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
-import tasks.TypeOfTask;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Collectors;
+
 
 public class HTTPTaskManager extends FileBackedTasksManager {
     private final KVTaskClient client;
@@ -26,13 +21,16 @@ public class HTTPTaskManager extends FileBackedTasksManager {
             registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
             .create();
 
-    public HTTPTaskManager(String port) {
+    public HTTPTaskManager(String port, boolean isLoad) {
         super(port);
         client = new KVTaskClient(port);
+        if (isLoad) {
+            load();
+        }
     }
 
-    public KVTaskClient getClient() {
-        return client;
+    public HTTPTaskManager(String port) {
+        this(port, false);
     }
 
     @Override
@@ -40,77 +38,68 @@ public class HTTPTaskManager extends FileBackedTasksManager {
         client.put("tasks", gson.toJson(tasks));
         client.put("epics", gson.toJson(epics));
         client.put("subtasks", gson.toJson(subtasks));
-        client.put("history", gson.toJson(historyManager.getHistory()));
+        client.put("history", gson.toJson(historyManager.getHistory().stream().map(Task::getId).collect(Collectors.toList())));
     }
 
-    public HTTPTaskManager load(String port) {
-        HTTPTaskManager manager = new HTTPTaskManager(port);
-
+    private void load() {
         String jsonTask = client.load("tasks");
         if (!jsonTask.isEmpty()) {
-            manager.tasks = gson.fromJson(manager.getClient().load("tasks"),
+            tasks = gson.fromJson(jsonTask,
                     new TypeToken<Map<Integer, Task>>() {
                     }.getType());
         }
 
         String jsonEpic = client.load("epics");
-        System.out.println(jsonEpic);
         if (!jsonEpic.isEmpty()) {
-            manager.epics = gson.fromJson(manager.getClient().load("epics"),
+            epics = gson.fromJson(jsonEpic,
                     new TypeToken<Map<Integer, Epic>>() {
                     }.getType());
         }
 
         String jsonSubtask = client.load("subtasks");
-        if(!jsonSubtask.isEmpty()) {
-            manager.subtasks = gson.fromJson(manager.getClient().load("subtasks"),
+        if (!jsonSubtask.isEmpty()) {
+            subtasks = gson.fromJson(jsonSubtask,
                     new TypeToken<Map<Integer, Subtask>>() {
                     }.getType());
         }
 
         String jsonHistory = client.load("history");
-        List<Task> history = gson.fromJson(jsonHistory, new TypeToken<List<Task>>() {
+        List<Integer> history = gson.fromJson(jsonHistory, new TypeToken<List<Integer>>() {
         }.getType());
 
         if (history != null) {
-            for (Task task : history) {
-                if (epics.containsKey(task.getId())) {
-                    Epic epic = epics.get(task.getId());
+            for (Integer id : history) {
+                if (epics.containsKey(id)) {
+                    Epic epic = epics.get(id);
                     historyManager.add(epic);
                 }
-                if (tasks.containsKey(task.getId())) {
-                    Task task1 = tasks.get(task.getId());
+                if (tasks.containsKey(id)) {
+                    Task task1 = tasks.get(id);
                     historyManager.add(task1);
                 }
-                if (subtasks.containsKey(task.getId())) {
-                    Subtask subTask = subtasks.get(task.getId());
-                    historyManager.add(subTask);
+                if (subtasks.containsKey(id)) {
+                    Subtask subtask = subtasks.get(id);
+                    historyManager.add(subtask);
                 }
             }
         }
-        return manager;
-    }
+        prioritizedTasks.addAll(tasks.values());
+        prioritizedTasks.addAll(subtasks.values());
 
-    class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
-
-        private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm");
-
-        @Override
-        public void write(final JsonWriter jsonWriter, final LocalDateTime localDateTime) throws IOException {
-            if (localDateTime == null) {
-                jsonWriter.nullValue();
-            } else {
-                jsonWriter.value(localDateTime.format(formatter));
+        if (!tasks.isEmpty()) {
+            Task maxTask = getTasks().stream().max(Comparator.comparing(Task::getId)).orElse(null);
+            counterId = maxTask.getId();
+        }
+        if (!epics.isEmpty()) {
+            Epic maxEpic = getEpics().stream().max(Comparator.comparing(Epic::getId)).orElse(null);
+            if (maxEpic.getId() > counterId) {
+                counterId = maxEpic.getId();
             }
         }
-
-        @Override
-        public LocalDateTime read(final JsonReader jsonReader) throws IOException {
-            if (jsonReader.peek() == JsonToken.NULL) {
-                jsonReader.nextNull();
-                return null;
-            } else {
-                return LocalDateTime.parse(jsonReader.nextString(), formatter);
+        if (!subtasks.isEmpty()) {
+            Subtask maxSubtask = getSubtasks().stream().max(Comparator.comparing(Subtask::getId)).orElse(null);
+            if (maxSubtask.getId() > counterId) {
+                counterId = maxSubtask.getId();
             }
         }
     }

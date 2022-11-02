@@ -12,19 +12,21 @@ import managers.TaskManager;
 import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
-import tasks.TypeOfTask;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.time.LocalDateTime;
-import java.util.*;
 
 public class HTTPTaskServer {
     public static final int PORT = 8080;
+
+    public TaskManager getManager() {
+        return manager;
+    }
+
     private final TaskManager manager = Managers.getDefault();
     private final Gson gson = new GsonBuilder()
             .serializeNulls()
@@ -42,7 +44,7 @@ public class HTTPTaskServer {
     }
 
 
-    class TasksHandler implements HttpHandler {
+    private class TasksHandler implements HttpHandler {
 
         @Override
         public void handle(HttpExchange h) throws IOException {
@@ -50,19 +52,15 @@ public class HTTPTaskServer {
                 String body = gson.toJson(manager.getPrioritizedTasks());
                 h.getResponseHeaders().add("Content-Type", "application/json");
                 h.sendResponseHeaders(200, 0);
-                try (OutputStream os = h.getResponseBody()) {
-                    os.write(body.getBytes());
-                }
+                writeText(h, body);
             } else {
                 h.sendResponseHeaders(405, 0);
-                try (OutputStream os = h.getResponseBody()) {
-                    os.write("Ожидается запрос другого типа".getBytes());
-                }
+                writeText(h, "Метод неверен");
             }
         }
     }
 
-    class TaskHandler implements HttpHandler {
+    private class TaskHandler implements HttpHandler {
 
         @Override
         public void handle(HttpExchange h) throws IOException {
@@ -73,9 +71,7 @@ public class HTTPTaskServer {
                         String body = gson.toJson(manager.getTasks());
                         h.getResponseHeaders().add("Content-Type", "application/json");
                         h.sendResponseHeaders(200, 0);
-                        try (OutputStream os = h.getResponseBody()) {
-                            os.write(body.getBytes());
-                        }
+                        writeText(h, body);
                     } else {
                         String[] parameters = query.split("=");
                         int id = Integer.parseInt(parameters[1]);
@@ -84,70 +80,68 @@ public class HTTPTaskServer {
                             String body = gson.toJson(manager.getTaskById(id));
                             h.getResponseHeaders().add("Content-Type", "application/json");
                             h.sendResponseHeaders(200, 0);
-                            try (OutputStream os = h.getResponseBody()) {
-                                os.write(body.getBytes());
-                            }
+                            writeText(h, body);
                         } else {
                             h.sendResponseHeaders(404, 0);
-                            try (OutputStream os = h.getResponseBody()) {
-                                os.write("Задачи с таким id нет".getBytes());
-                            }
+                            writeText(h, "Задачи с таким id нет");
                         }
                     }
                     break;
                 case "POST":
-                    InputStream is = h.getRequestBody();
-                    String body = new String(is.readAllBytes(), UTF_8);
+                    String body = readText(h);
+                    if (body.isEmpty()) {
+                        h.sendResponseHeaders(400, 0);
+                        writeText(h, "Пустое тело");
+                        return;
+                    }
                     JsonElement jsonElement = JsonParser.parseString(body);
                     if (!jsonElement.isJsonObject()) {
-                        System.out.println("Тело запроса клиента не соответствует формату JSON");
+                        System.out.println("Не формат JSON");
                         h.sendResponseHeaders(405, 0);
                         return;
                     }
                     Task task = gson.fromJson(body, Task.class);
-                    task.setTypeOfTask(TypeOfTask.TASK);
-                    task.setEndTime(Optional.ofNullable(task.getStartTime()).isPresent() ? task.getStartTime().plusMinutes(task.getDuration()) : null);
-                    manager.addTask(task);
-                    h.sendResponseHeaders(201, 0);
-                    try (OutputStream os = h.getResponseBody()) {
-                        os.write("Задача добавлена".getBytes());
+                    if (task.getId() == null) {
+                        manager.addTask(task);
+                    } else {
+                        manager.updateTask(task);
                     }
+                    h.sendResponseHeaders(201, 0);
+                    writeText(h, "Задача добавлена");
                     break;
                 case "DELETE":
                     if (query == null) {
                         manager.removeAllTasks();
-                        h.sendResponseHeaders(201, 0);
-                        try (OutputStream os = h.getResponseBody()) {
-                            os.write("Задачи удалены".getBytes());
-                        }
+                        h.sendResponseHeaders(200, 0);
+                        writeText(h, "Задачи удалены");
                     } else {
                         String[] params = query.split("=");
                         int taskId = Integer.parseInt(params[1]);
                         if (manager.getTasks().stream()
                                 .anyMatch(t -> t.getId() == taskId)) {
                             manager.removeTaskById(taskId);
-                            h.sendResponseHeaders(201, 0);
-                            try (OutputStream os = h.getResponseBody()) {
-                                os.write("Задача удалена".getBytes());
-                            }
+                            h.sendResponseHeaders(200, 0);
+                            writeText(h, "Задача удалена");
                         } else {
                             h.sendResponseHeaders(404, 0);
-                            try (OutputStream os = h.getResponseBody()) {
-                                os.write("Задачи с таким id нет".getBytes());
-                            }
+                            writeText(h, "Задачи с таким id нет");
                         }
                     }
                     break;
                 default:
                     h.sendResponseHeaders(405, 0);
-                    try (OutputStream os = h.getResponseBody()) {
-                        os.write("Метод неверен".getBytes());
-                    }
+                    writeText(h, "Метод неверен");
             }
         }
     }
 
-    class EpicHandler implements HttpHandler {
+    private static void writeText(HttpExchange h, String x) throws IOException {
+        try (OutputStream os = h.getResponseBody()) {
+            os.write(x.getBytes());
+        }
+    }
+
+    private class EpicHandler implements HttpHandler {
 
         @Override
         public void handle(HttpExchange h) throws IOException {
@@ -158,9 +152,7 @@ public class HTTPTaskServer {
                         String body = gson.toJson(manager.getEpics());
                         h.getResponseHeaders().add("Content-Type", "application/json");
                         h.sendResponseHeaders(200, 0);
-                        try (OutputStream os = h.getResponseBody()) {
-                            os.write(body.getBytes());
-                        }
+                        writeText(h, body);
                     } else {
                         String[] parameters = query.split("=");
                         int epicId = Integer.parseInt(parameters[1]);
@@ -169,72 +161,56 @@ public class HTTPTaskServer {
                             String body = gson.toJson(manager.getEpicById(epicId));
                             h.getResponseHeaders().add("Content-Type", "application/json");
                             h.sendResponseHeaders(200, 0);
-                            try (OutputStream os = h.getResponseBody()) {
-                                os.write(body.getBytes());
-                            }
+                            writeText(h, body);
                         } else {
                             h.sendResponseHeaders(404, 0);
-                            try (OutputStream os = h.getResponseBody()) {
-                                os.write("Эпика с таким id нет".getBytes());
-                            }
+                            writeText(h, "Эпика с таким id нет");
                         }
                     }
                     break;
                 case "POST":
-                    InputStream is = h.getRequestBody();
-                    String body = new String(is.readAllBytes(), UTF_8);
-                    JsonElement jsonElement = JsonParser.parseString(body);
-                    if (!jsonElement.isJsonObject()) {
-                        System.out.println("Тело запроса клиента не соответствует формату JSON");
-                        h.sendResponseHeaders(405, 0);
+                    String body = readText(h);
+                    if (body.isEmpty()) {
+                        h.sendResponseHeaders(400, 0);
+                        writeText(h, "Пустое тело");
                         return;
                     }
                     Epic epic = gson.fromJson(body, Epic.class);
-                    epic.setTypeOfTask(TypeOfTask.EPIC);
-                    epic.setSubtasksOfEpic(new ArrayList<>());
-                    epic.setSortedByEndTimeSubtasks(new TreeSet<>(Comparator.comparing(Task::getEndTime).reversed()));
-                    epic.setSortedByStartTimeSubtasks(new TreeSet<>(Comparator.comparing(Task::getStartTime)));
-                    manager.addEpic(epic);
-                    h.sendResponseHeaders(201, 0);
-                    try (OutputStream os = h.getResponseBody()) {
-                        os.write("Эпик добавлен".getBytes());
+                    if (epic.getId() == null) {
+                        manager.addEpic(epic);
+                    } else {
+                        manager.updateTask(epic);
                     }
+                    h.sendResponseHeaders(201, 0);
+                    writeText(h, "Эпик добавлен");
                     break;
                 case "DELETE":
                     if (query == null) {
                         manager.removeAllEpics();
-                        h.sendResponseHeaders(201, 0);
-                        try (OutputStream os = h.getResponseBody()) {
-                            os.write("Эпики удалены".getBytes());
-                        }
+                        h.sendResponseHeaders(200, 0);
+                        writeText(h, "Эпики удалены");
                     } else {
                         String[] parameters = query.split("=");
                         int epicId = Integer.parseInt(parameters[1]);
                         if (manager.getEpics().stream()
                                 .anyMatch(e -> e.getId() == epicId)) {
                             manager.removeEpicById(epicId);
-                            h.sendResponseHeaders(201, 0);
-                            try (OutputStream os = h.getResponseBody()) {
-                                os.write("Эпик удалён".getBytes());
-                            }
+                            h.sendResponseHeaders(200, 0);
+                            writeText(h, "Эпик удалён");
                         } else {
                             h.sendResponseHeaders(404, 0);
-                            try (OutputStream os = h.getResponseBody()) {
-                                os.write("Эпика с таким id нет".getBytes());
-                            }
+                            writeText(h, "Эпика с таким id нет");
                         }
                     }
                     break;
                 default:
                     h.sendResponseHeaders(405, 0);
-                    try (OutputStream os = h.getResponseBody()) {
-                        os.write("Метод неверен".getBytes());
-                    }
+                    writeText(h, "Метод неверен");
             }
         }
     }
 
-    class SubtaskHandler implements HttpHandler {
+    private class SubtaskHandler implements HttpHandler {
 
         @Override
         public void handle(HttpExchange h) throws IOException {
@@ -245,9 +221,7 @@ public class HTTPTaskServer {
                         String body = gson.toJson(manager.getSubtasks());
                         h.getResponseHeaders().add("Content-Type", "application/json");
                         h.sendResponseHeaders(200, 0);
-                        try (OutputStream os = h.getResponseBody()) {
-                            os.write(body.getBytes());
-                        }
+                        writeText(h, body);
                     } else {
                         String[] parameters = query.split("=");
                         int subtaskId = Integer.parseInt(parameters[1]);
@@ -256,85 +230,82 @@ public class HTTPTaskServer {
                             String body = gson.toJson(manager.getSubtaskById(subtaskId));
                             h.getResponseHeaders().add("Content-Type", "application/json");
                             h.sendResponseHeaders(200, 0);
-                            try (OutputStream os = h.getResponseBody()) {
-                                os.write(body.getBytes());
-                            }
+                            writeText(h, body);
                         } else {
                             h.sendResponseHeaders(404, 0);
-                            try (OutputStream os = h.getResponseBody()) {
-                                os.write("Подзадачи с таким id нет".getBytes());
-                            }
+                            writeText(h, "Подзадачи с таким id нет");
                         }
                     }
                     break;
                 case "POST":
-                    InputStream inputStream = h.getRequestBody();
-                    String body = new String(inputStream.readAllBytes(), UTF_8);
-                    Subtask subtask = gson.fromJson(body, Subtask.class);
-                    subtask.setTypeOfTask(TypeOfTask.SUBTASK);
-                    subtask.setEndTime(Optional.ofNullable(subtask.getStartTime()).isPresent() ? subtask.getStartTime().plusMinutes(subtask.getDuration()) : null);
-                    manager.addSubtask(subtask);
-                    h.sendResponseHeaders(201, 0);
-                    try (OutputStream os = h.getResponseBody()) {
-                        os.write("Подзадача добавлена".getBytes());
+                    String body = readText(h);
+                    if (body.isEmpty()) {
+                        h.sendResponseHeaders(400, 0);
+                        writeText(h, "Пустое тело");
+                        return;
                     }
+                    Subtask subtask = gson.fromJson(body, Subtask.class);
+                    if (subtask.getId() == null) {
+                        manager.addSubtask(subtask);
+                    } else {
+                        manager.updateSubtask(subtask);
+                    }
+                    h.sendResponseHeaders(201, 0);
+                    writeText(h, "Подзадача добавлена");
                     break;
                 case "DELETE":
                     String queryId = h.getRequestURI().getQuery();
                     if (queryId == null) {
                         manager.removeAllSubtasks();
-                        h.sendResponseHeaders(201, 0);
-                        try (OutputStream os = h.getResponseBody()) {
-                            os.write("Подзадачи удалены".getBytes());
-                        }
+                        h.sendResponseHeaders(200, 0);
+                        writeText(h, "Подзадачи удалены");
                     } else {
                         String[] parameters = queryId.split("=");
                         int id = Integer.parseInt(parameters[1]);
                         if (manager.getSubtasks().stream()
                                 .anyMatch(s -> s.getId() == id)) {
                             manager.removeSubtaskById(id);
-                            h.sendResponseHeaders(201, 0);
-                            try (OutputStream os = h.getResponseBody()) {
-                                os.write("Подзадача удалена".getBytes());
-                            }
+                            h.sendResponseHeaders(200, 0);
+                            writeText(h, "Подзадача удалена");
                         } else {
                             h.sendResponseHeaders(404, 0);
-                            try (OutputStream os = h.getResponseBody()) {
-                                os.write("Подзадачи с таким id нет".getBytes());
-                            }
+                            writeText(h, "Подзадачи с таким id нет");
                         }
                     }
                     break;
                 default:
                     h.sendResponseHeaders(405, 0);
-                    try (OutputStream os = h.getResponseBody()) {
-                        os.write("Метод неверен".getBytes());
-                    }
+                    writeText(h, "Метод неверен");
             }
         }
     }
 
-    class HistoryHandler implements HttpHandler {
+    private class HistoryHandler implements HttpHandler {
 
         @Override
         public void handle(HttpExchange h) throws IOException {
             if ("GET".equals(h.getRequestMethod())) {
-                String body = gson.toJson(manager.getHistoryManager());
+                String body = gson.toJson(manager.getHistoryManager().getHistory());
                 h.getResponseHeaders().add("Content-Type", "application/json");
                 h.sendResponseHeaders(200, 0);
-                try (OutputStream os = h.getResponseBody()) {
-                    os.write(body.getBytes());
-                }
+                writeText(h, body);
             } else {
                 h.sendResponseHeaders(405, 0);
-                try (OutputStream os = h.getResponseBody()) {
-                    os.write("Метод неверен".getBytes());
-                }
+                writeText(h, "Метод неверен");
             }
         }
     }
 
+    private String readText(HttpExchange h) throws IOException {
+        return new String(h.getRequestBody().readAllBytes(), UTF_8);
+    }
+
     public void start() {
         server.start();
+    }
+
+    public void stop() {
+        System.out.println("Останавливаем сервер");
+        server.stop(1);
     }
 }

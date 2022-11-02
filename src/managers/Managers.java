@@ -1,15 +1,12 @@
 package managers;
 
-import http.KVServer;
-import http.KVTaskClient;
-
 public final class Managers {
 
     private Managers() {
     }
 
     public static TaskManager getDefault() {
-        return new HTTPTaskManager("8078");
+        return new HTTPTaskManager("8078", true);
     }
 
     public static TaskManager getInMemoryTaskManager() {

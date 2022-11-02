@@ -4,7 +4,6 @@ import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
 
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +19,8 @@ public interface TaskManager {
     Subtask addSubtask(Subtask subtask);
 
     Epic addEpic(Epic epic);
+
+    int getCounterId();
 
     ArrayList<Task> getTasks();
 

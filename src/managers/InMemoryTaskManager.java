@@ -162,6 +162,10 @@ public class InMemoryTaskManager implements TaskManager {
         return bounds;
     }
 
+    public void setPrioritizedTasks(Set<Task> prioritizedTasks) {
+        this.prioritizedTasks = prioritizedTasks;
+    }
+
     public List<Task> getPrioritizedTasks() {
         return new ArrayList<>(prioritizedTasks);
     }
@@ -187,6 +191,10 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
+    @Override
+    public int getCounterId() {
+        return counterId;
+    }
     @Override
     public ArrayList<Task> getTasks() {
         return new ArrayList<>(tasks.values());

@@ -1,5 +1,8 @@
 package http;
 
+import exceptions.ResponseException;
+import exceptions.StatusCodeException;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -21,9 +24,13 @@ public class KVTaskClient {
                 build();
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            apiToken = response.body();
+            if (response.statusCode() != 200) {
+                throw new StatusCodeException("Статус ответа не 200");
+            } else {
+                apiToken = response.body();
+            }
         } catch (IOException | InterruptedException e) {
-            System.out.println("Во время выполнения запроса ресурса по url-адресу: '" + uri + "' возникла ошибка.\n" +
+            throw new ResponseException("Во время выполнения запроса ресурса по url-адресу: '" + uri + "' возникла ошибка.\n" +
                     "Проверьте, пожалуйста, адрес и повторите попытку.");
         }
     }
@@ -31,15 +38,18 @@ public class KVTaskClient {
     public void put(String key, String json) {
         URI uri = URI.create(SERVER_NAME + port + "/save/" + key + "?API_TOKEN=" + apiToken);
         HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(json);
-        HttpRequest request = HttpRequest.
-                newBuilder().
-                uri(uri).
-                POST(body).
-                build();
+            HttpRequest request = HttpRequest.
+                    newBuilder().
+                    uri(uri).
+                    POST(body).
+                    build();
         try {
-            client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse response = client.send(request, HttpResponse.BodyHandlers.discarding());
+            if (response.statusCode() != 200) {
+                throw new StatusCodeException("Статус ответа не 200");
+            }
         } catch (IOException | InterruptedException e) {
-            System.out.println("Во время выполнения запроса ресурса по url-адресу: '" + uri + "' возникла ошибка.\n" +
+            throw new ResponseException("Во время выполнения запроса ресурса по url-адресу: '" + uri + "' возникла ошибка.\n" +
                     "Проверьте, пожалуйста, адрес и повторите попытку.");
         }
     }
@@ -51,11 +61,11 @@ public class KVTaskClient {
                 uri(uri).
                 GET().
                 build();
-        HttpResponse<String> response = null;
+        HttpResponse<String> response;
         try {
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
-            System.out.println("Во время выполнения запроса ресурса по url-адресу: '" + uri + "' возникла ошибка.\n" +
+            throw new ResponseException("Во время выполнения запроса ресурса по url-адресу: '" + uri + "' возникла ошибка.\n" +
                     "Проверьте, пожалуйста, адрес и повторите попытку.");
         }
         return response.body();
